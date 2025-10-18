@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { boolean } = require('webidl-conversions');
 
-mongoose.connect("mongodb://localhost:27017/Task")
+mongoose.connect("mongodb+srv://Tushar_110704:2dc1pkOsEx7yJyXz@cluster0.drxa4k1.mongodb.net/Task?retryWrites=true&w=majority&appName=Cluster0")
 
 const userSchema = mongoose.Schema({
   email:String,
