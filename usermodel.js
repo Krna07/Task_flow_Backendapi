@@ -12,10 +12,14 @@ const signupSchema = mongoose.Schema({
   email:String,
   password:String,
 
-   taskArray:[{
-      taskName: String,
-      category: String
-    }]
+taskArray: [
+  {
+    taskName: String,
+    category: String,
+    taskTime: Date // new field
+  }
+]
+
 })
 
 const adminSchema = mongoose.Schema({

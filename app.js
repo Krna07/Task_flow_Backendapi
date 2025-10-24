@@ -6,6 +6,9 @@ app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+require('dotenv').config();
+const scheduleEmailReminder = require("./emailReminder"); 
+
 const { User, SignupUser,adminData } = require('./usermodel');
 console.log({ User, SignupUser,adminData });
 
@@ -66,31 +69,54 @@ app.post("/login", async (req, res) => {
 });
 
 
+// app.post("/user/:id", async (req, res) => {
+//   const { id } = req.params;
+//   const { taskName, category } = req.body;
+
+//   try {
+//     // 1️⃣ Find the user by ID
+//     const user = await SignupUser.findById(id);
+//     if (!user) {
+//       return res.status(404).json({ error: "User not found" });
+//     }
+//     console.log(user)
+//     // 2️⃣ Push new task into user's taskArray
+//     user.taskArray.push({ taskName, category });
+
+//     // 3️⃣ Save the updated user document
+//     await user.save();
+
+//     // 4️⃣ Respond with success message and updated user data
+//     res.status(200).json({ message: "Task added successfully", user });
+    
+//   } catch (err) {
+//     console.error("Error adding task:", err);
+//     res.status(500).json({ error: "Error adding task" });
+//   }
+// });
+
 app.post("/user/:id", async (req, res) => {
   const { id } = req.params;
-  const { taskName, category } = req.body;
+  const { taskName, category, taskTime } = req.body;
 
   try {
-    // 1️⃣ Find the user by ID
     const user = await SignupUser.findById(id);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-    console.log(user)
-    // 2️⃣ Push new task into user's taskArray
-    user.taskArray.push({ taskName, category });
+    if (!user) return res.status(404).json({ error: "User not found" });
 
-    // 3️⃣ Save the updated user document
+    user.taskArray.push({ taskName, category, taskTime });
     await user.save();
 
-    // 4️⃣ Respond with success message and updated user data
+    // Schedule the email reminder here
+    scheduleEmailReminder(user, taskName, taskTime);
+
     res.status(200).json({ message: "Task added successfully", user });
-    
   } catch (err) {
     console.error("Error adding task:", err);
     res.status(500).json({ error: "Error adding task" });
   }
 });
+
+
 
 
 app.post("/read",async(req,res)=>{
