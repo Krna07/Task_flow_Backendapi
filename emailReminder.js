@@ -1,13 +1,12 @@
-// emailReminder.js
 const nodemailer = require("nodemailer");
-const cron = require("node-cron");
+const schedule = require("node-schedule");
 
 const transporter = nodemailer.createTransport({
-  service: "gmail", // or your SMTP provider
+  service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER, // your email
-    pass: process.env.EMAIL_PASS  // app password
-  }
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS, // App password
+  },
 });
 
 function scheduleEmailReminder(user, taskName, taskTime) {
@@ -16,19 +15,21 @@ function scheduleEmailReminder(user, taskName, taskTime) {
   // Make sure the date is in the future
   if (reminderDate <= new Date()) return;
 
-  // Convert to cron format: min hour day month *
-  const cronTime = `${reminderDate.getMinutes()} ${reminderDate.getHours()} ${reminderDate.getDate()} ${reminderDate.getMonth() + 1} *`;
-
-  cron.schedule(cronTime, () => {
-    transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: user.email,
-      subject: `Reminder: Task "${taskName}"`,
-      text: `Hello ${user.name},\n\nThis is a reminder for your task: "${taskName}" scheduled now.\n\nRegards,\nTaskFlow`
-    })
-    .then(info => console.log("Email sent:", info.response))
-    .catch(err => console.error("Error sending email:", err));
+  schedule.scheduleJob(reminderDate, async () => {
+    try {
+      const info = await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: user.email,
+        subject: `Reminder: Task "${taskName}"`,
+        text: `Hello ${user.name},\n\nThis is a reminder for your task: "${taskName}" scheduled now.\n\nRegards,\nTaskFlow`,
+      });
+      console.log("Email sent:", info.response);
+    } catch (err) {
+      console.error("Error sending email:", err);
+    }
   });
+
+  console.log(`Scheduled email for ${user.email} at ${reminderDate}`);
 }
 
 module.exports = scheduleEmailReminder;
